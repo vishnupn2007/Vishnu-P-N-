@@ -1,5 +1,4 @@
 import tkinter as tk
-import threading
 import sounddevice as sd
 import numpy as np
 import time
@@ -22,15 +21,19 @@ t_dot = np.linspace(0, 200.0/1000.0, int(sample_rate * 200.0/1000.0 ), endpoint=
 t_dash = np.linspace(0, 600.0/1000.0, int(sample_rate * 600.0/1000.0), endpoint=False)
 dot_sound = np.sin(2 * np.pi * fq * t_dot).astype(np.float32)
 dash_sound = np.sin(2 * np.pi * fq * t_dash).astype(np.float32)
-
-# To play the corresponding audio when called and enhancing time by using threading concept
+blank_sound=np.sin(2 * np.pi * fq * 0).astype(np.float32)
+# To play the corresponding audio when called and enhancing time by usinging concept
 def play_sound(c):
     if c == ".":
-        threading.Thread(target=lambda: sd.play(dot_sound, sample_rate,blocking=False)).start()    
+        sd.play(dot_sound, sample_rate,blocking=False)
+        output_label.config(text=displayed_text)    
     elif c == "-":
-        threading.Thread(target=lambda: sd.play(dash_sound, sample_rate,blocking=False)).start()
-    sd.wait()
-
+        sd.play(dash_sound, sample_rate,blocking=False)
+        output_label.config(text=displayed_text)  
+    elif c == " ":
+        sd.play(blank_sound, sample_rate,blocking=False)
+        output_label.config(text=displayed_text)  
+    
 #To convert the given text into morse code 
 def text_to_morse(text):
     result = []
@@ -39,7 +42,7 @@ def text_to_morse(text):
             result.append(MORSE_CODE[ch])
         elif ch == " ":
             result.append(" ")
-    return " ".join(result)
+    return " ".join(result)+" "
 
 # Display the code in the tkinter window
 def display_morse(index=0):
@@ -50,15 +53,14 @@ def display_morse(index=0):
 
     symbol = morse_string[index]
     displayed_text += symbol
-    output_label.config(text=displayed_text)
-
     if symbol == ".":       
         play_sound(symbol)
         delay = 200
     elif symbol == "-":     
         play_sound(symbol)
-        delay = 600
-    elif symbol == " ":                   
+        delay = 500
+    elif symbol == " ":   
+        play_sound(symbol)                
         delay = 700
     else:
         delay=100
@@ -74,18 +76,19 @@ def start_display():
     
 # To create tkinter window
 root = tk.Tk()
-root.geometry("600x400")
+root.geometry("")
+root.configure(bg="black")
 img=Image.open("FINALIMG.jpg")
 bg=ImageTk.PhotoImage(img)
 bgl=tk.Label(root,image=bg)
 bgl.place(x=0,y=0,relwidth=1,relheight=1)
-root.configure(bg="black")
+
 root.title("MORSE CODE GENERATOR")
-tk.Label(root, text="MORSE CODE GENERATOR",bg="white",font=("Impact",40)).pack(pady=100)
-tk.Label(root, text="INPUT MESSAGE :",bg="white",font=("Impact",30)).pack(pady=20)
-entry = tk.Entry(root,width=30,font=("Arial",20))
+tk.Label(root, text="MORSE CODE GENERATOR",bg="black",fg="white", font=("Impact",40)).pack(pady=100)
+tk.Label(root, text="INPUT MESSAGE :",bg="black",fg="white",font=("Impact",30)).pack(pady=20)
+entry = tk.Entry(root,width=30,fg="white",bg="black",font=("Arial",20))
 entry.pack(padx=10,pady=30)
-tk.Button(root, text="Show Morse", command=start_display,font=("times roman",15,"bold")).pack(pady=10)
-output_label = tk.Label(root, text="", font=("Courier", 24,"bold"))
+tk.Button(root, text="Show Morse",bg="black",fg="white", command=start_display,font=("times roman",15,"bold")).pack(pady=10)
+output_label = tk.Label(root, text="", bg="black",fg="white",font=("Courier", 24,"bold"))
 output_label.pack(pady=10)
 root.mainloop()
